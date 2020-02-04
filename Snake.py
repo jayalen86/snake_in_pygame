@@ -6,6 +6,7 @@ pygame.display.set_caption('Snake')
 icon = pygame.image.load('images/snakeicon.png')
 pygame.display.set_icon(icon)
 fruit_sound = pygame.mixer.Sound("sounds/ding.wav")
+gameover_sound = pygame.mixer.Sound("sounds/gameover.wav")
 screen_height = 400
 screen_width = 400
 grid_width= 40
@@ -113,5 +114,6 @@ while game_running:
         #ends game if snake hits himself
         if grid[x][y] == (255,0,0):
             gameover = True
+            pygame.mixer.Sound.play(gameover_sound)
     else:
         gameover_screen()
