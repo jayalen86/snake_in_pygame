@@ -21,6 +21,7 @@ direction = 'Right'
 score = 0
 gameover = False
 
+#draws grid
 def drawgrid():
     screen.fill((0,0,0))
     grid = [[(0,0,0) for x in range(grid_width)] for y in range(grid_height)]
@@ -38,6 +39,54 @@ def drawgrid():
             x_axis += 10
     pygame.display.update()
     return grid
+
+#moves snakes
+def move():
+    if direction == 'Right':
+        column = snake[len(snake)-1][1]+1
+        if column == grid_width:
+            column = 0
+        snake.insert(len(snake),[snake[len(snake)-1][0], column])
+        snake.remove(snake[0])
+    elif direction == 'Left':
+        column = snake[len(snake)-1][1]-1
+        if column < 0:
+            column = grid_width-1
+        snake.insert(len(snake),[snake[len(snake)-1][0], column])
+        snake.remove(snake[0])
+    elif direction == 'Down':
+        row = snake[len(snake)-1][0]+1
+        if row == grid_height:
+            row = 0
+        snake.insert(len(snake),[row, snake[len(snake)-1][1]])
+        snake.remove(snake[0])
+    elif direction == 'Up':
+        row = snake[len(snake)-1][0]-1
+        if row < 0:
+            row = grid_height-1
+        snake.insert(len(snake),[row, snake[len(snake)-1][1]])
+        snake.remove(snake[0])
+
+#checks if there is fruit to eat
+def eat(grid, score):
+    x = snake[len(snake)-1][0]
+    y = snake[len(snake)-1][1]
+    if grid[x][y] == (0,255,0):
+        score += 1
+        pygame.mixer.Sound.play(fruit_sound)
+        fruit.remove([x,y])
+        fruit.append([random.randint(0, 39), random.randint(0, 39)])
+        snake.insert(0, [x, y])
+    return score
+
+#checks for collisions
+def collision(grid, gameover):
+    x = snake[len(snake)-1][0]
+    y = snake[len(snake)-1][1]
+    if grid[x][y] == (255,0,0):
+        gameover = True
+        pygame.mixer.Sound.play(gameover_sound)
+    return gameover
 
 def gameover_screen():
     screen.fill((0,0,0))
@@ -75,45 +124,11 @@ while game_running:
         score = 0
         gameover = False
         continue
-    #moves snake in chosen direction
+    
     if gameover == False:
         grid = drawgrid()
-        if direction == 'Right':
-            column = snake[len(snake)-1][1]+1
-            if column == grid_width:
-                column = 0
-            snake.insert(len(snake),[snake[len(snake)-1][0], column])
-            snake.remove(snake[0])
-        elif direction == 'Left':
-            column = snake[len(snake)-1][1]-1
-            if column < 0:
-                column = grid_width-1
-            snake.insert(len(snake),[snake[len(snake)-1][0], column])
-            snake.remove(snake[0])
-        elif direction == 'Down':
-            row = snake[len(snake)-1][0]+1
-            if row == grid_height:
-                row = 0
-            snake.insert(len(snake),[row, snake[len(snake)-1][1]])
-            snake.remove(snake[0])
-        elif direction == 'Up':
-            row = snake[len(snake)-1][0]-1
-            if row < 0:
-                row = grid_height-1
-            snake.insert(len(snake),[row, snake[len(snake)-1][1]])
-            snake.remove(snake[0])
-        #checks if snake head touches green square & increases snake size if it does
-        x = snake[len(snake)-1][0]
-        y = snake[len(snake)-1][1]
-        if grid[x][y] == (0,255,0):
-            score += 1
-            pygame.mixer.Sound.play(fruit_sound)
-            fruit.remove([x,y])
-            fruit.append([random.randint(0, 39), random.randint(0, 39)])
-            snake.insert(0, [x, y])
-        #ends game if snake hits himself
-        if grid[x][y] == (255,0,0):
-            gameover = True
-            pygame.mixer.Sound.play(gameover_sound)
+        move()
+        score = eat(grid, score)
+        gameover = collision(grid, gameover)
     else:
         gameover_screen()
